@@ -1,0 +1,58 @@
+Use Case
+Scope
+Level
+Pre-Condition
+Post-Condition
+Primary Actor
+Trigger
+Main Success Scenario
+  action (interaction, validation, state change)
+Extensions (patched, redo, abort)
+Test Cases
+
+Boundaries: Parent Widget of Animation
+  In: animation with png, jpg, jpeg image, animation with text, animation with shape
+      size, end animation, handling of children
+  Out: animation duration (only default), animated object's size (only animate between set sizes), shapes
+       
+Primary actors: Flutter developer, end-user
+Goals: dev - make a widget more lively, fill a blank space
+       user - see some topical animation, don't get distracted
+
+Use Case
+  Show Raindrop Fade Animation
+Scope
+  business-level: an end-user sees the dev's widget as fun to interact with
+Pre-Condition
+  app is installed
+  a topical image, text or shape is given
+Post-Condition
+  the topical image, text, shape is shown in a non-distracting way
+Primary Actor
+  end-user
+Trigger
+  the end-user opens the screen that uses the widget
+Main Success Scenario
+  1. user is shown the widget (validation)
+  2. the animation starts (state change)
+  3. user navigates away from the screen (interaction)
+  4. the animation stops smoothly (state change)
+Extensions (patched, redo, abort)
+  1. widget can't load the animated objects
+     the widget becomes a sized box with one child
+  2. animation lags
+     the widget becomes a sized box with one child
+  4. animation ends abruptly
+     a debug print is shown to the dev
+Test Cases
+  unit tests:
+  objects get increasingly bigger 2
+  the animation's memory footprint is below a certain threshold 7
+  passing no objects, leads to an error 3
+
+  widget tests:
+  the widget can show the objects (images, text) 1
+  there is only ever a set amount of objects on screen 6
+  the objects are shown on different positions, scattered across the screen 4
+  the user can interact with the widget's children 5
+  the animation is fast forwarded, once the user navigates to a different screen 8
