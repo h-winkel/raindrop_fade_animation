@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
 // ── Public abstract widget ─────────────────────────────────────────────────
@@ -12,19 +13,23 @@ import 'package:flutter/widgets.dart';
 /// RaindropFadeAnimation.text(text: 'Hello')
 /// ```
 abstract class RaindropFadeAnimation extends StatefulWidget {
-  const RaindropFadeAnimation({super.key});
+  final Color backgroundColor;
+
+  const RaindropFadeAnimation({super.key, this.backgroundColor = Colors.transparent});
 
   factory RaindropFadeAnimation.image({
     Key? key,
+    Color backgroundColor = Colors.transparent,
     required ImageProvider imageProvider,
   }) =>
-      _RaindropFadeImageAnimation(key: key, imageProvider: imageProvider);
+      _RaindropFadeImageAnimation(key: key, imageProvider: imageProvider, backgroundColor: backgroundColor);
 
   factory RaindropFadeAnimation.text({
     Key? key,
+    Color backgroundColor = Colors.transparent,
     required String text,
   }) =>
-      _RaindropFadeTextAnimation(key: key, text: text);
+      _RaindropFadeTextAnimation(key: key, text: text, backgroundColor: backgroundColor);
 }
 
 // ── Private concrete widget subclasses ────────────────────────────────────
@@ -32,6 +37,7 @@ abstract class RaindropFadeAnimation extends StatefulWidget {
 class _RaindropFadeImageAnimation extends RaindropFadeAnimation {
   const _RaindropFadeImageAnimation({
     super.key,
+    super.backgroundColor = Colors.transparent,
     required this.imageProvider,
   });
 
@@ -45,6 +51,7 @@ class _RaindropFadeImageAnimation extends RaindropFadeAnimation {
 class _RaindropFadeTextAnimation extends RaindropFadeAnimation {
   const _RaindropFadeTextAnimation({
     super.key,
+    super.backgroundColor = Colors.transparent,
     required this.text,
   });
 
