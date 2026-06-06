@@ -16,12 +16,14 @@ abstract class RaindropFadeAnimation extends StatefulWidget {
   final Color backgroundColor;
   final Widget child;
   final bool repeats;
+  final Duration duration;
 
   const RaindropFadeAnimation({
     super.key,
     this.backgroundColor = Colors.transparent,
     this.child = const SizedBox.shrink(),
     this.repeats = true,
+    this.duration = const Duration(milliseconds: 800),
   });
 
   factory RaindropFadeAnimation.image({
@@ -29,6 +31,7 @@ abstract class RaindropFadeAnimation extends StatefulWidget {
     Color backgroundColor = Colors.transparent,
     Widget child = const SizedBox.shrink(),
     bool repeats = true,
+    Duration duration = const Duration(milliseconds: 800),
     required ImageProvider imageProvider,
   }) =>
       _RaindropFadeImageAnimation(
@@ -36,6 +39,7 @@ abstract class RaindropFadeAnimation extends StatefulWidget {
         imageProvider: imageProvider,
         backgroundColor: backgroundColor,
         repeats: repeats,
+        duration: duration,
         child: child,
       );
 
@@ -44,6 +48,7 @@ abstract class RaindropFadeAnimation extends StatefulWidget {
     Color backgroundColor = Colors.transparent,
     Widget child = const SizedBox.shrink(),
     bool repeats = true,
+    Duration duration = const Duration(milliseconds: 800),
     required String text,
     TextStyle? textStyle,
   }) =>
@@ -53,6 +58,7 @@ abstract class RaindropFadeAnimation extends StatefulWidget {
         textStyle: textStyle,
         backgroundColor: backgroundColor,
         repeats: repeats,
+        duration: duration,
         child: child,
       );
 }
@@ -65,6 +71,7 @@ class _RaindropFadeImageAnimation extends RaindropFadeAnimation {
     super.backgroundColor,
     super.child,
     super.repeats,
+    super.duration,
     required this.imageProvider,
   });
 
@@ -81,6 +88,7 @@ class _RaindropFadeTextAnimation extends RaindropFadeAnimation {
     super.backgroundColor,
     super.child,
     super.repeats,
+    super.duration,
     required this.text,
     this.textStyle,
   });
@@ -114,10 +122,15 @@ abstract class _RaindropFadeAnimationState<T extends RaindropFadeAnimation>
 
     _controller = AnimationController(
       vsync: this,
-      //TODO: parameterize this
-      duration: const Duration(milliseconds: 800),
-    //TODO: stop animation by fast forwarding the remaining objects
-    )..repeat();
+      duration: widget.duration,
+    );
+
+    // Either loop indefinitely or play a single cycle.
+    if (widget.repeats) {
+      _controller.repeat();
+    } else {
+      _controller.forward();
+    }
 
     // Grows from a small point to full size over the whole duration.
     _scale = Tween<double>(begin: 0.2, end: 1.0).animate(
@@ -138,6 +151,28 @@ abstract class _RaindropFadeAnimationState<T extends RaindropFadeAnimation>
   }
 
   @override
+  void deactivate() {
+    // The widget is being removed from the tree (e.g. a route is being popped).
+    // Fast-forward through the remainder of the current cycle so the raindrop
+    // fades out gracefully while the page exit transition is still visible,
+    // rather than freezing mid-frame.
+    _controller.animateTo(1.0);
+    super.deactivate();
+  }
+
+  @override
+  void activate() {
+    // The widget was temporarily removed but has been reinserted into the tree.
+    // Restore the intended playback behaviour.
+    super.activate();
+    if (widget.repeats) {
+      _controller.repeat();
+    } else {
+      _controller.forward();
+    }
+  }
+
+  @override
   void dispose() {
     _controller.dispose();
     super.dispose();
@@ -146,6 +181,22 @@ abstract class _RaindropFadeAnimationState<T extends RaindropFadeAnimation>
   @override
   void didUpdateWidget(covariant T oldWidget) {
     super.didUpdateWidget(oldWidget);
+
+    // Propagate a changed duration to the running controller.
+    if (oldWidget.duration != widget.duration) {
+      _controller.duration = widget.duration;
+    }
+
+    // React to repeats being toggled at runtime.
+    if (oldWidget.repeats != widget.repeats) {
+      if (widget.repeats) {
+        _controller.repeat();
+      } else {
+        // Fast-forward through the remainder of the current cycle so the
+        // animation finishes gracefully rather than freezing mid-frame.
+        _controller.animateTo(1.0);
+      }
+    }
   }
 
   /// Subclasses return a painter that will be animated.

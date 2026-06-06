@@ -56,6 +56,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
+  bool repeats = true;
 
   void _incrementCounter() {
     setState(() {
@@ -74,9 +75,10 @@ class _MyHomePageState extends State<MyHomePage> {
       width: MediaQuery.of(context).size.width,
       height: MediaQuery.of(context).size.height,
       child: RaindropFadeAnimation.text(text: '漢',
-        repeats: true,
+        repeats: repeats,
         textStyle: TextStyle(fontSize: 50, color: Colors.white),
-        backgroundColor: Colors.black,),
+        backgroundColor: Colors.black,
+        duration: Duration(milliseconds: 1500),),
     );
   }
 }
