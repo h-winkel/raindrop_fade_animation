@@ -1,6 +1,8 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 
+export 'raindrop_fade_field.dart';
+
 // ── Public abstract widget ─────────────────────────────────────────────────
 
 /// A widget that animates its content with a raindrop-like fade effect:

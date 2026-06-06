@@ -74,11 +74,11 @@ class _MyHomePageState extends State<MyHomePage> {
     return SizedBox(
       width: MediaQuery.of(context).size.width,
       height: MediaQuery.of(context).size.height,
-      child: RaindropFadeAnimation.text(text: '漢',
-        repeats: repeats,
+      child: RaindropFadeField.text(text: '漢',
+        maxAnimationCount: 10,
+        backgroundColor: Colors.blue,
         textStyle: TextStyle(fontSize: 50, color: Colors.white),
-        backgroundColor: Colors.black,
-        duration: Duration(milliseconds: 1500),),
+        duration: Duration(seconds: 10),),
     );
   }
 }
