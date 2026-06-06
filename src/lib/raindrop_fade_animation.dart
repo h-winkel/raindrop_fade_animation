@@ -1,3 +1,4 @@
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 
 // ── Public abstract widget ─────────────────────────────────────────────────
@@ -18,7 +19,8 @@ abstract class RaindropFadeAnimation extends StatefulWidget {
   const RaindropFadeAnimation({
     super.key,
     this.backgroundColor = Colors.transparent,
-    this.child = const SizedBox.shrink()});
+    this.child = const SizedBox.shrink(),
+  });
 
   factory RaindropFadeAnimation.image({
     Key? key,
@@ -26,15 +28,27 @@ abstract class RaindropFadeAnimation extends StatefulWidget {
     Widget child = const SizedBox.shrink(),
     required ImageProvider imageProvider,
   }) =>
-      _RaindropFadeImageAnimation(key: key, imageProvider: imageProvider, backgroundColor: backgroundColor, child: child);
+      _RaindropFadeImageAnimation(
+        key: key,
+        imageProvider: imageProvider,
+        backgroundColor: backgroundColor,
+        child: child,
+      );
 
   factory RaindropFadeAnimation.text({
     Key? key,
     Color backgroundColor = Colors.transparent,
     Widget child = const SizedBox.shrink(),
     required String text,
+    TextStyle? textStyle,
   }) =>
-      _RaindropFadeTextAnimation(key: key, text: text, backgroundColor: backgroundColor, child: child);
+      _RaindropFadeTextAnimation(
+        key: key,
+        text: text,
+        textStyle: textStyle,
+        backgroundColor: backgroundColor,
+        child: child,
+      );
 }
 
 // ── Private concrete widget subclasses ────────────────────────────────────
@@ -42,8 +56,8 @@ abstract class RaindropFadeAnimation extends StatefulWidget {
 class _RaindropFadeImageAnimation extends RaindropFadeAnimation {
   const _RaindropFadeImageAnimation({
     super.key,
-    super.backgroundColor = Colors.transparent,
-    super.child = const SizedBox.shrink(),
+    super.backgroundColor,
+    super.child,
     required this.imageProvider,
   });
 
@@ -57,12 +71,14 @@ class _RaindropFadeImageAnimation extends RaindropFadeAnimation {
 class _RaindropFadeTextAnimation extends RaindropFadeAnimation {
   const _RaindropFadeTextAnimation({
     super.key,
-    super.backgroundColor = Colors.transparent,
-    super.child = const SizedBox.shrink(),
+    super.backgroundColor,
+    super.child,
     required this.text,
+    this.textStyle,
   });
 
   final String text;
+  final TextStyle? textStyle;
 
   @override
   State<_RaindropFadeTextAnimation> createState() => _RaindropFadeTextState();
@@ -74,6 +90,10 @@ class _RaindropFadeTextAnimation extends RaindropFadeAnimation {
 ///
 /// Subclasses only need to implement [buildPainter]; this class handles
 /// the full animation lifecycle via the Template Method pattern.
+///
+/// The [AnimationController] is passed to each painter as its [repaint]
+/// listenable, so [CustomPaint] repaints on every animation tick without
+/// needing [AnimatedBuilder] or [setState].
 abstract class _RaindropFadeAnimationState<T extends RaindropFadeAnimation>
     extends State<T> with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
@@ -113,88 +133,204 @@ abstract class _RaindropFadeAnimationState<T extends RaindropFadeAnimation>
     super.dispose();
   }
 
-  /// Subclasses return the content to animate (e.g. an [Image] or [Text]).
+  /// Subclasses return a painter that will be animated.
   ///
-  /// This is called once and cached — it is not rebuilt on every animation
-  /// frame, so it is safe to construct widgets here without concern for
-  /// unnecessary rebuilds.
-  CustomPainter buildPainter(BuildContext context);
+  /// Called once per [build]. The painter receives [_controller] as its
+  /// repaint listenable and the current animation values so [paint] can
+  /// apply scale and opacity without any widget rebuilds.
+  CustomPainter buildPainter();
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Expanded(
-          child: ColoredBox(
-            color: widget.backgroundColor,
-            child: CustomPaint(
-              painter: buildPainter(context),
-              child: Center(child: widget.child),
-            ),
-          ),
-        ),
-      ],
+    return ColoredBox(
+      color: widget.backgroundColor,
+      child: CustomPaint(
+        // The painter reads _scale.value / _opacity.value each frame and
+        // is scheduled to repaint by _controller via the repaint listenable.
+        painter: buildPainter(),
+        child: widget.child,
+      ),
     );
   }
 }
 
-// ── Concrete states — only the content differs ─────────────────────────────
+// ── Concrete states — only the painter construction differs ────────────────
 
 class _RaindropFadeImageState
     extends _RaindropFadeAnimationState<_RaindropFadeImageAnimation> {
+  /// The resolved [dart:ui Image], populated once the [ImageProvider] stream
+  /// delivers its first frame.
+  ui.Image? _resolvedImage;
+  ImageStream? _imageStream;
+  late final ImageStreamListener _imageStreamListener;
+
   @override
-  CustomPainter buildPainter(BuildContext context) {
-    return RaindropFadeImagePainter(image: widget.imageProvider);
+  void initState() {
+    super.initState();
+    _imageStreamListener = ImageStreamListener(_onImageLoaded);
+    _resolveImage();
+  }
+
+  @override
+  void didUpdateWidget(_RaindropFadeImageAnimation oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.imageProvider != widget.imageProvider) {
+      _imageStream?.removeListener(_imageStreamListener);
+      _resolveImage();
+    }
+  }
+
+  void _resolveImage() {
+    _imageStream = widget.imageProvider
+        .resolve(ImageConfiguration.empty)
+      ..addListener(_imageStreamListener);
+  }
+
+  void _onImageLoaded(ImageInfo info, bool synchronousCall) {
+    if (mounted) {
+      setState(() => _resolvedImage = info.image);
+    }
+  }
+
+  @override
+  void dispose() {
+    _imageStream?.removeListener(_imageStreamListener);
+    super.dispose();
+  }
+
+  @override
+  CustomPainter buildPainter() {
+    return RaindropFadeImagePainter(
+      repaint: _controller,
+      image: _resolvedImage,
+      scale: _scale,
+      opacity: _opacity,
+    );
   }
 }
 
 class _RaindropFadeTextState
     extends _RaindropFadeAnimationState<_RaindropFadeTextAnimation> {
   @override
-  CustomPainter buildPainter(BuildContext context) {
-    return RaindropFadeTextPainter(text: widget.text);
+  CustomPainter buildPainter() {
+    return RaindropFadeTextPainter(
+      repaint: _controller,
+      text: widget.text,
+      textStyle: widget.textStyle,
+      scale: _scale,
+      opacity: _opacity,
+    );
   }
 }
 
-class RaindropFadeImagePainter extends CustomPainter {
-  final ImageProvider image;
+// ── Painters ───────────────────────────────────────────────────────────────
 
-  RaindropFadeImagePainter({super.repaint, required this.image});
+/// Applies [scale] and [opacity] to the canvas before drawing, so that
+/// the animation is driven entirely inside [paint] with no widget rebuilds.
+///
+/// [repaint] should be the [AnimationController] so that [CustomPaint]
+/// schedules a repaint on every animation tick.
+class RaindropFadeImagePainter extends CustomPainter {
+  final ui.Image? image;
+  final Animation<double> scale;
+  final Animation<double> opacity;
+
+  RaindropFadeImagePainter({
+    required Listenable repaint,
+    required this.image,
+    required this.scale,
+    required this.opacity,
+  }) : super(repaint: repaint);
 
   @override
   void paint(Canvas canvas, Size size) {
-    canvas.drawImage(
-      //TODO: ImageProvider can't be passed, don't want to load image here
-      image,
-      Offset.zero,
-      //TODO: this paint does not need to do anything
-      Paint());
+    final resolvedImage = image;
+    if (resolvedImage == null) return; // still loading
+
+    final paint = Paint()..color = Color.fromRGBO(255, 255, 255, opacity.value);
+
+    // Pivot the scale transform around the centre of the canvas.
+    final centre = size.center(Offset.zero);
+    canvas.save();
+    canvas.translate(centre.dx, centre.dy);
+    canvas.scale(scale.value);
+    canvas.translate(-centre.dx, -centre.dy);
+
+    // Fit the image inside the available area.
+    final src = Rect.fromLTWH(
+      0,
+      0,
+      resolvedImage.width.toDouble(),
+      resolvedImage.height.toDouble(),
+    );
+    final dst = Offset.zero & size;
+    canvas.drawImageRect(resolvedImage, src, dst, paint);
+
+    canvas.restore();
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return true;
+  bool shouldRepaint(RaindropFadeImagePainter oldDelegate) {
+    return oldDelegate.image != image ||
+        oldDelegate.scale != scale ||
+        oldDelegate.opacity != opacity;
   }
 }
 
 class RaindropFadeTextPainter extends CustomPainter {
   final String text;
+  final TextStyle? textStyle;
+  final Animation<double> scale;
+  final Animation<double> opacity;
 
-  RaindropFadeTextPainter({super.repaint, required this.text});
+  static const TextStyle _defaultStyle = TextStyle(
+    color: Colors.white,
+    fontSize: 30,
+  );
+
+  RaindropFadeTextPainter({
+    required Listenable repaint,
+    required this.text,
+    required this.scale,
+    required this.opacity,
+    this.textStyle,
+  }) : super(repaint: repaint);
 
   @override
   void paint(Canvas canvas, Size size) {
-    //TODO: parameterize these
-    final style = TextStyle(color: Colors.white, fontSize: 30);
-    final span = TextSpan(text: text, style: style);
-    final painter = TextPainter(text: span, textDirection: TextDirection.ltr)
-      ..layout(minWidth: 0, maxWidth: size.width);
+    // Merge the caller's style on top of the default, then apply opacity.
+    final effectiveStyle = _defaultStyle.merge(textStyle).copyWith(
+          color: (_defaultStyle.merge(textStyle).color ?? Colors.white)
+              .withOpacity(opacity.value),
+        );
 
-    painter.paint(canvas, Offset.zero);
+    final span = TextSpan(text: text, style: effectiveStyle);
+    final textPainter =
+        TextPainter(text: span, textDirection: TextDirection.ltr)
+          ..layout(minWidth: 0, maxWidth: size.width);
+
+    // Pivot the scale transform around the centre of the text.
+    final centre = Alignment.center.alongSize(size);
+    canvas.save();
+    canvas.translate(centre.dx, centre.dy);
+    canvas.scale(scale.value);
+    canvas.translate(-centre.dx, -centre.dy);
+
+    // Draw centred in the canvas.
+    final offset = Offset(
+      (size.width - textPainter.width) / 2,
+      (size.height - textPainter.height) / 2,
+    );
+    textPainter.paint(canvas, offset);
+
+    canvas.restore();
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return true;
+  bool shouldRepaint(RaindropFadeTextPainter oldDelegate) {
+    return oldDelegate.text != text ||
+        oldDelegate.textStyle != textStyle ||
+        oldDelegate.scale != scale ||
+        oldDelegate.opacity != opacity;
   }
 }
