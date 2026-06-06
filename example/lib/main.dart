@@ -73,8 +73,10 @@ class _MyHomePageState extends State<MyHomePage> {
     return SizedBox(
       width: MediaQuery.of(context).size.width,
       height: MediaQuery.of(context).size.height,
-      child: RaindropFadeAnimation.image(imageProvider: AssetImage('assets/flutter.png'),
-        backgroundColor: Colors.white,),
+      child: RaindropFadeAnimation.text(text: '漢',
+        repeats: true,
+        textStyle: TextStyle(fontSize: 50, color: Colors.white),
+        backgroundColor: Colors.black,),
     );
   }
 }

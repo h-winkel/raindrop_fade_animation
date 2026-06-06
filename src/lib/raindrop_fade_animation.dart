@@ -15,23 +15,27 @@ import 'package:flutter/material.dart';
 abstract class RaindropFadeAnimation extends StatefulWidget {
   final Color backgroundColor;
   final Widget child;
+  final bool repeats;
 
   const RaindropFadeAnimation({
     super.key,
     this.backgroundColor = Colors.transparent,
     this.child = const SizedBox.shrink(),
+    this.repeats = true,
   });
 
   factory RaindropFadeAnimation.image({
     Key? key,
     Color backgroundColor = Colors.transparent,
     Widget child = const SizedBox.shrink(),
+    bool repeats = true,
     required ImageProvider imageProvider,
   }) =>
       _RaindropFadeImageAnimation(
         key: key,
         imageProvider: imageProvider,
         backgroundColor: backgroundColor,
+        repeats: repeats,
         child: child,
       );
 
@@ -39,6 +43,7 @@ abstract class RaindropFadeAnimation extends StatefulWidget {
     Key? key,
     Color backgroundColor = Colors.transparent,
     Widget child = const SizedBox.shrink(),
+    bool repeats = true,
     required String text,
     TextStyle? textStyle,
   }) =>
@@ -47,6 +52,7 @@ abstract class RaindropFadeAnimation extends StatefulWidget {
         text: text,
         textStyle: textStyle,
         backgroundColor: backgroundColor,
+        repeats: repeats,
         child: child,
       );
 }
@@ -58,6 +64,7 @@ class _RaindropFadeImageAnimation extends RaindropFadeAnimation {
     super.key,
     super.backgroundColor,
     super.child,
+    super.repeats,
     required this.imageProvider,
   });
 
@@ -73,6 +80,7 @@ class _RaindropFadeTextAnimation extends RaindropFadeAnimation {
     super.key,
     super.backgroundColor,
     super.child,
+    super.repeats,
     required this.text,
     this.textStyle,
   });
@@ -106,8 +114,10 @@ abstract class _RaindropFadeAnimationState<T extends RaindropFadeAnimation>
 
     _controller = AnimationController(
       vsync: this,
+      //TODO: parameterize this
       duration: const Duration(milliseconds: 800),
-    )..forward();
+    //TODO: stop animation by fast forwarding the remaining objects
+    )..repeat();
 
     // Grows from a small point to full size over the whole duration.
     _scale = Tween<double>(begin: 0.2, end: 1.0).animate(
@@ -131,6 +141,11 @@ abstract class _RaindropFadeAnimationState<T extends RaindropFadeAnimation>
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(covariant T oldWidget) {
+    super.didUpdateWidget(oldWidget);
   }
 
   /// Subclasses return a painter that will be animated.
