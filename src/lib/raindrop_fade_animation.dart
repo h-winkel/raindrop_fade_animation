@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 
 // ── Public abstract widget ─────────────────────────────────────────────────
 
@@ -14,22 +13,28 @@ import 'package:flutter/widgets.dart';
 /// ```
 abstract class RaindropFadeAnimation extends StatefulWidget {
   final Color backgroundColor;
+  final Widget child;
 
-  const RaindropFadeAnimation({super.key, this.backgroundColor = Colors.transparent});
+  const RaindropFadeAnimation({
+    super.key,
+    this.backgroundColor = Colors.transparent,
+    this.child = const SizedBox.shrink()});
 
   factory RaindropFadeAnimation.image({
     Key? key,
     Color backgroundColor = Colors.transparent,
+    Widget child = const SizedBox.shrink(),
     required ImageProvider imageProvider,
   }) =>
-      _RaindropFadeImageAnimation(key: key, imageProvider: imageProvider, backgroundColor: backgroundColor);
+      _RaindropFadeImageAnimation(key: key, imageProvider: imageProvider, backgroundColor: backgroundColor, child: child);
 
   factory RaindropFadeAnimation.text({
     Key? key,
     Color backgroundColor = Colors.transparent,
+    Widget child = const SizedBox.shrink(),
     required String text,
   }) =>
-      _RaindropFadeTextAnimation(key: key, text: text, backgroundColor: backgroundColor);
+      _RaindropFadeTextAnimation(key: key, text: text, backgroundColor: backgroundColor, child: child);
 }
 
 // ── Private concrete widget subclasses ────────────────────────────────────
@@ -38,6 +43,7 @@ class _RaindropFadeImageAnimation extends RaindropFadeAnimation {
   const _RaindropFadeImageAnimation({
     super.key,
     super.backgroundColor = Colors.transparent,
+    super.child = const SizedBox.shrink(),
     required this.imageProvider,
   });
 
@@ -52,6 +58,7 @@ class _RaindropFadeTextAnimation extends RaindropFadeAnimation {
   const _RaindropFadeTextAnimation({
     super.key,
     super.backgroundColor = Colors.transparent,
+    super.child = const SizedBox.shrink(),
     required this.text,
   });
 
@@ -65,7 +72,7 @@ class _RaindropFadeTextAnimation extends RaindropFadeAnimation {
 
 /// Base state that drives the scale + opacity animation.
 ///
-/// Subclasses only need to implement [buildContent]; this class handles
+/// Subclasses only need to implement [buildPainter]; this class handles
 /// the full animation lifecycle via the Template Method pattern.
 abstract class _RaindropFadeAnimationState<T extends RaindropFadeAnimation>
     extends State<T> with SingleTickerProviderStateMixin {
@@ -111,21 +118,19 @@ abstract class _RaindropFadeAnimationState<T extends RaindropFadeAnimation>
   /// This is called once and cached — it is not rebuilt on every animation
   /// frame, so it is safe to construct widgets here without concern for
   /// unnecessary rebuilds.
-  Widget buildContent(BuildContext context);
+  CustomPainter buildPainter(BuildContext context);
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      // [child] is built once by [buildContent] and passed through unchanged.
-      builder: (context, child) => Opacity(
-        opacity: _opacity.value,
-        child: Transform.scale(
-          scale: _scale.value,
-          child: child,
+    return Stack(
+      children: [
+        Expanded(
+          child: CustomPaint(
+            painter: buildPainter(context),
+            child: Center(child: widget.child),
+          ),
         ),
-      ),
-      child: buildContent(context),
+      ],
     );
   }
 }
@@ -135,15 +140,47 @@ abstract class _RaindropFadeAnimationState<T extends RaindropFadeAnimation>
 class _RaindropFadeImageState
     extends _RaindropFadeAnimationState<_RaindropFadeImageAnimation> {
   @override
-  Widget buildContent(BuildContext context) {
-    return Image(image: widget.imageProvider);
+  CustomPainter buildPainter(BuildContext context) {
+    return RaindropFadeImagePainter(image: widget.imageProvider);
   }
 }
 
 class _RaindropFadeTextState
     extends _RaindropFadeAnimationState<_RaindropFadeTextAnimation> {
   @override
-  Widget buildContent(BuildContext context) {
-    return Text(widget.text);
+  CustomPainter buildPainter(BuildContext context) {
+    return RaindropFadeTextPainter(text: widget.text);
+  }
+}
+
+class RaindropFadeImagePainter extends CustomPainter {
+  final ImageProvider image;
+
+  RaindropFadeImagePainter({super.repaint, required this.image});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // TODO: implement paint
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return true;
+  }
+}
+
+class RaindropFadeTextPainter extends CustomPainter {
+  final String text;
+
+  RaindropFadeTextPainter({super.repaint, required this.text});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // TODO: implement paint
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return true;
   }
 }
