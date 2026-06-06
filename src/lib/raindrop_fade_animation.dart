@@ -194,7 +194,7 @@ abstract class _RaindropFadeAnimationState<T extends RaindropFadeAnimation>
       } else {
         // Fast-forward through the remainder of the current cycle so the
         // animation finishes gracefully rather than freezing mid-frame.
-        _controller.animateTo(1.0);
+        _controller.animateTo(1.0, duration: const Duration(milliseconds: 200));
       }
     }
   }

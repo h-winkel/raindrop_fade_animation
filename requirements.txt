@@ -48,11 +48,12 @@ Test Cases
   unit tests:
   objects get increasingly bigger 2
   the animation's memory footprint is below a certain threshold 7
-  passing no objects, leads to an error 3
 
   widget tests:
+  different objects can be animated at the same time
   the widget can show the objects (images, text) 1
   there is only ever a set amount of objects on screen 6
   the objects are shown on different positions, scattered across the screen 4
   the user can interact with the widget's children 5
   the animation is fast forwarded, once the user navigates to a different screen 8
+  the animated objects do not appear behind the child
