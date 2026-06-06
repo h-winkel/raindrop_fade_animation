@@ -75,10 +75,11 @@ class _MyHomePageState extends State<MyHomePage> {
       width: MediaQuery.of(context).size.width,
       height: MediaQuery.of(context).size.height,
       child: RaindropFadeField.text(text: '漢',
-        maxAnimationCount: 10,
+        particleSize: const Size(200, 200),
+        maxAnimationCount: 7,
         backgroundColor: Colors.blue,
-        textStyle: TextStyle(fontSize: 50, color: Colors.white),
-        duration: Duration(seconds: 10),),
+        textStyle: TextStyle(fontSize: 100, color: Colors.white),
+        duration: Duration(milliseconds: 7000),),
     );
   }
 }
