@@ -125,9 +125,12 @@ abstract class _RaindropFadeAnimationState<T extends RaindropFadeAnimation>
     return Stack(
       children: [
         Expanded(
-          child: CustomPaint(
-            painter: buildPainter(context),
-            child: Center(child: widget.child),
+          child: ColoredBox(
+            color: widget.backgroundColor,
+            child: CustomPaint(
+              painter: buildPainter(context),
+              child: Center(child: widget.child),
+            ),
           ),
         ),
       ],
@@ -160,7 +163,12 @@ class RaindropFadeImagePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // TODO: implement paint
+    canvas.drawImage(
+      //TODO: ImageProvider can't be passed, don't want to load image here
+      image,
+      Offset.zero,
+      //TODO: this paint does not need to do anything
+      Paint());
   }
 
   @override
@@ -176,7 +184,13 @@ class RaindropFadeTextPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // TODO: implement paint
+    //TODO: parameterize these
+    final style = TextStyle(color: Colors.white, fontSize: 30);
+    final span = TextSpan(text: text, style: style);
+    final painter = TextPainter(text: span, textDirection: TextDirection.ltr)
+      ..layout(minWidth: 0, maxWidth: size.width);
+
+    painter.paint(canvas, Offset.zero);
   }
 
   @override
