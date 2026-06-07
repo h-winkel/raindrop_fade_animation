@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:raindrop_fade_animation/raindrop_fade_animation.dart';
+import 'package:raindrop_fade_animation/raindrop_fade_individual_field.dart';
 
 void main() {
   runApp(MyApp());
@@ -16,15 +16,7 @@ class _MyAppState extends State<MyApp> {
   int currentAnimation = 0;
 
   // #begin
-  final singleText = RaindropFadeField.text(
-    text: 'test',
-    backgroundColor: Colors.blue,
-    maxAnimationCount: 5,
-    duration: Duration(milliseconds: 1500),
-    particleSize: Size(200, 200),
-    textStyle: TextStyle(fontSize: 28, color: Colors.white),);
-
-  final multipleTexts = RaindropFadeIndividualField.texts(
+  final multipleTexts = RaindropFadeAnimation.texts(
     texts: ['test', 'flutter', 'linux', 'pub.dev'],
     backgroundColor: Colors.blue,
     maxAnimationCount: 5,
@@ -32,14 +24,7 @@ class _MyAppState extends State<MyApp> {
     particleSize: Size(200, 200),
     textStyle: TextStyle(fontSize: 28, color: Colors.white),);
 
-  final singleImage = RaindropFadeField.image(
-    imageProvider: AssetImage('assets/flutter.png'),
-    backgroundColor: Colors.blue,
-    maxAnimationCount: 5,
-    duration: Duration(milliseconds: 1500),
-    particleSize: Size(200, 200),);
-
-  final multipleImages = RaindropFadeIndividualField.images(
+  final multipleImages = RaindropFadeAnimation.images(
     imageProviders: [AssetImage('assets/flutter.png'), AssetImage('assets/tux.png'),],
     backgroundColor: Colors.blue,
     maxAnimationCount: 5,
@@ -55,14 +40,14 @@ class _MyAppState extends State<MyApp> {
         backgroundColor: Colors.black,
         floatingActionButton: FloatingActionButton(
           onPressed: () => setState(() {
-            currentAnimation >= 3
+            currentAnimation >= 1
               ? currentAnimation = 0
               : currentAnimation++;
           })
         ),
         body: SafeArea(
           child: SizedBox.expand(
-            child: <Widget>[singleText, multipleTexts, singleImage, multipleImages][currentAnimation],
+            child: <Widget>[multipleTexts, multipleImages][currentAnimation],
           ),
         ),
       ),

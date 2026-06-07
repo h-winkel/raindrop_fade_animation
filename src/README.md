@@ -1,19 +1,11 @@
-Animates one or multiple texts/images as if they were raindrops on a body of water.
+Animates texts and images, as if they were raindrops on a body of water.
 
 ## Features
 
-Animate multiple texts multiple times:
+Animate texts:
 ![Demo Video](https://example.com/video.mp4)
 
-<!-- #code ./example/lib/main.dart -->
-
-Animate multiple images multiple times:
-![Demo Video](https://example.com/video.mp4)
-
-Animate one text multiple times:
-![Demo Video](https://example.com/video.mp4)
-
-Animate one image multiple times:
+Animate images:
 ![Demo Video](https://example.com/video.mp4)
 
 ## Getting started
