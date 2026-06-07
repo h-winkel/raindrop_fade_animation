@@ -2,6 +2,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 
 export 'raindrop_fade_field.dart';
+export 'raindrop_fade_individual_field.dart';
 
 // ── Public abstract widget ─────────────────────────────────────────────────
 

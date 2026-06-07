@@ -74,7 +74,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return SizedBox(
       width: MediaQuery.of(context).size.width,
       height: MediaQuery.of(context).size.height,
-      child: RaindropFadeField.text(text: '漢',
+      child: RaindropFadeIndividualField.texts(texts: ['漢', '字', '日', '本', '語'],
         particleSize: const Size(200, 200),
         maxAnimationCount: 7,
         backgroundColor: Colors.blue,
