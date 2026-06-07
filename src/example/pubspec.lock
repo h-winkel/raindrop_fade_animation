@@ -142,7 +142,7 @@ packages:
   raindrop_fade_animation:
     dependency: "direct main"
     description:
-      path: "../src"
+      path: ".."
       relative: true
     source: path
     version: "0.0.1"
