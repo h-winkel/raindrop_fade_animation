@@ -2,3 +2,7 @@
 
 * animate images
 * animate texts
+
+## 1.0.1
+
+* added webp as markdown
