@@ -5,11 +5,11 @@ Animates texts and images, as if they were raindrops on a body of water.
 
 Animate images:
 
-<img src="webp/multiple_images_short.webp" width="300" />
+![Animate images](webp/multiple_images_short.webp)
 
 Animate texts:
 
-<img src="webp/multiple_texts_short.webp" width="300" />
+![Animate texts](webp/multiple_texts_short.webp)
 
 ## Getting started
 
