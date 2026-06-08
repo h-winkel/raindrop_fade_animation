@@ -4,10 +4,12 @@ Animates texts and images, as if they were raindrops on a body of water.
 ## Features
 
 Animate texts:
-![Texts](https://github.com/h-winkel/raindrop_fade_animation/blob/main/src/example/assets/multiple_texts_short.webp)
+
+<img src="https://github.com/h-winkel/raindrop_fade_animation/blob/main/src/example/assets/multiple_texts_short.webp" width="400" />
 
 Animate images:
-![Images](https://github.com/h-winkel/raindrop_fade_animation/blob/main/src/example/assets/multiple_images_short.webp)
+
+<img src="https://github.com/h-winkel/raindrop_fade_animation/blob/main/src/example/assets/multiple_images_short.webp" width="400" />
 
 ## Getting started
 
