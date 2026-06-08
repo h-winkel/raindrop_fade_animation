@@ -1,7 +1,7 @@
 name: raindrop_fade_animation
 description: "A package animating text and images as raindrop-like impacts on a body of water."
 version: 1.0.0
-homepage: 
+repository: https://github.com/h-winkel/raindrop_fade_animation.git
 
 environment:
   sdk: ^3.11.5
