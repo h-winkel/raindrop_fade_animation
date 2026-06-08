@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:raindrop_fade_animation/raindrop_fade_individual_field.dart';
+import 'package:raindrop_fade_animation/raindrop_fade_animation.dart';
 
 void main() {
   runApp(MyApp());

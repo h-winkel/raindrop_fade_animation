@@ -1,30 +1,29 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:example/main.dart';
+import 'package:raindrop_fade_animation/raindrop_fade_animation.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('RaindropFadeAnimation smoke test', (WidgetTester tester) async {
+    // Build the widget with texts.
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: RaindropFadeAnimation.texts(
+            texts: ['Test'],
+            maxAnimationCount: 1,
+          ),
+        ),
+      ),
+    );
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // Verify it builds without crashing.
+    // We use a predicate to find the widget because it might be a private subclass
+    expect(find.byWidgetPredicate((widget) => widget is RaindropFadeAnimation), findsOneWidget);
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // Pump a frame to trigger the animation controller.
+    await tester.pump(const Duration(milliseconds: 100));
+    
+    // Verify it still exists.
+    expect(find.byWidgetPredicate((widget) => widget is RaindropFadeAnimation), findsOneWidget);
   });
 }

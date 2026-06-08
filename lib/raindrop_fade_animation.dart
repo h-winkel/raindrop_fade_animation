@@ -10,26 +10,26 @@ import 'package:flutter/material.dart';
 ///
 /// [position] is a fractional coordinate in [0, 1] × [0, 1] that is scaled
 /// to actual pixels at paint time, so it is size-independent at init.
-abstract class _RaindropIndividualParticle {
+abstract class _RaindropParticle {
   Offset position;
 
   /// This particle's starting offset in the shared [0, 1] controller cycle.
   /// Particles are spread evenly so they never all peak simultaneously.
   final double phaseOffset;
 
-  _RaindropIndividualParticle({required this.position, required this.phaseOffset});
+  _RaindropParticle({required this.position, required this.phaseOffset});
 }
 
-class _RaindropIndividualTextParticle extends _RaindropIndividualParticle {
+class _RaindropTextParticle extends _RaindropParticle {
   String text;
 
-  _RaindropIndividualTextParticle({required super.position, required super.phaseOffset, required this.text});
+  _RaindropTextParticle({required super.position, required super.phaseOffset, required this.text});
 }
 
-class _RaindropIndividualImageParticle extends _RaindropIndividualParticle {
+class _RaindropImageParticle extends _RaindropParticle {
   ImageProvider image;
 
-  _RaindropIndividualImageParticle({required super.position, required super.phaseOffset, required this.image});
+  _RaindropImageParticle({required super.position, required super.phaseOffset, required this.image});
 }
 
 // ── Curve helpers (mirrors RaindropFadeAnimation curves) ───────────────────
@@ -59,25 +59,38 @@ double _opacityAt(double t) {
 /// single [CustomPainter] pass — O(1) ticker overhead regardless of count.
 ///
 /// ```dart
-/// RaindropFadeIndividualField.texts(
+/// RaindropFadeAnimation.texts(
 ///   maxAnimationCount: 8,
 ///   texts: ['漢', '字', '日', '本'],
 ///   textStyle: TextStyle(fontSize: 48),
 /// )
-/// RaindropFadeIndividualField.images(
+/// RaindropFadeAnimation.images(
 ///   maxAnimationCount: 5,
 ///   imageProviders: [AssetImage('assets/drop1.png'), AssetImage('assets/drop2.png')],
 /// )
 /// ```
-abstract class RaindropFadeIndividualField extends StatefulWidget {
+/// A widget that animates a field of raindrop-like fading particles.
+///
+/// Use [RaindropFadeAnimation.texts] to animate a collection of strings,
+/// or [RaindropFadeAnimation.images] to animate a collection of [ImageProvider]s.
+///
+/// The widget covers its entire allocated area and randomly positions particles
+/// that fade in and scale up, then fade out, mimicking raindrops hitting water.
+abstract class RaindropFadeAnimation extends StatefulWidget {
+  /// The background color of the entire animation field.
   final Color backgroundColor;
+
+  /// The total number of particles animating simultaneously.
+  /// Higher counts create a denser "rain" effect but require more processing.
   final int maxAnimationCount;
+
+  /// The duration of a single particle's full lifecycle (fade in to fade out).
   final Duration duration;
 
-  /// Maximum rendered size of a single particle at full scale.
+  /// The maximum size a particle can reach at the peak of its animation (scale = 1.0).
   final Size particleSize;
 
-  const RaindropFadeIndividualField({
+  const RaindropFadeAnimation({
     super.key,
     this.backgroundColor = Colors.transparent,
     this.maxAnimationCount = 5,
@@ -85,7 +98,13 @@ abstract class RaindropFadeIndividualField extends StatefulWidget {
     this.particleSize = const Size(80, 80),
   });
 
-  factory RaindropFadeIndividualField.images({
+  /// Creates an animation field that displays images.
+  ///
+  /// [imageProviders] is the list of images to cycle through.
+  /// [maxAnimationCount] defaults to 5.
+  /// [duration] defaults to 1.5 seconds.
+  /// [particleSize] defaults to 80x80.
+  factory RaindropFadeAnimation.images({
     Key? key,
     Color backgroundColor = Colors.transparent,
     int maxAnimationCount = 5,
@@ -93,7 +112,7 @@ abstract class RaindropFadeIndividualField extends StatefulWidget {
     Size particleSize = const Size(80, 80),
     required List<ImageProvider> imageProviders,
   }) =>
-      _RaindropFadeIndividualFieldImages(
+      _RaindropFadeAnimationImages(
         key: key,
         backgroundColor: backgroundColor,
         maxAnimationCount: maxAnimationCount,
@@ -102,7 +121,14 @@ abstract class RaindropFadeIndividualField extends StatefulWidget {
         imageProviders: imageProviders,
       );
 
-  factory RaindropFadeIndividualField.texts({
+  /// Creates an animation field that displays text characters or strings.
+  ///
+  /// [texts] is the list of strings to cycle through.
+  /// [textStyle] allows customizing the appearance of the text.
+  /// [maxAnimationCount] defaults to 5.
+  /// [duration] defaults to 1.5 seconds.
+  /// [particleSize] defaults to 80x80.
+  factory RaindropFadeAnimation.texts({
     Key? key,
     Color backgroundColor = Colors.transparent,
     int maxAnimationCount = 5,
@@ -111,7 +137,7 @@ abstract class RaindropFadeIndividualField extends StatefulWidget {
     required List<String> texts,
     TextStyle? textStyle,
   }) =>
-      _RaindropFadeIndividualFieldTexts(
+      _RaindropFadeAnimationTexts(
         key: key,
         backgroundColor: backgroundColor,
         maxAnimationCount: maxAnimationCount,
@@ -124,8 +150,8 @@ abstract class RaindropFadeIndividualField extends StatefulWidget {
 
 // ── Private concrete widget subclasses ────────────────────────────────────
 
-class _RaindropFadeIndividualFieldImages extends RaindropFadeIndividualField {
-  const _RaindropFadeIndividualFieldImages({
+class _RaindropFadeAnimationImages extends RaindropFadeAnimation {
+  const _RaindropFadeAnimationImages({
     super.key,
     super.backgroundColor,
     super.maxAnimationCount,
@@ -137,12 +163,12 @@ class _RaindropFadeIndividualFieldImages extends RaindropFadeIndividualField {
   final List<ImageProvider> imageProviders;
 
   @override
-  State<_RaindropFadeIndividualFieldImages> createState() =>
-      _RaindropFadeIndividualFieldImagesState();
+  State<_RaindropFadeAnimationImages> createState() =>
+      _RaindropFadeAnimationImagesState();
 }
 
-class _RaindropFadeIndividualFieldTexts extends RaindropFadeIndividualField {
-  const _RaindropFadeIndividualFieldTexts({
+class _RaindropFadeAnimationTexts extends RaindropFadeAnimation {
+  const _RaindropFadeAnimationTexts({
     super.key,
     super.backgroundColor,
     super.maxAnimationCount,
@@ -156,16 +182,16 @@ class _RaindropFadeIndividualFieldTexts extends RaindropFadeIndividualField {
   final TextStyle? textStyle;
 
   @override
-  State<_RaindropFadeIndividualFieldTexts> createState() =>
-      _RaindropFadeIndividualFieldTextsState();
+  State<_RaindropFadeAnimationTexts> createState() =>
+      _RaindropFadeAnimationTextsState();
 }
 
 // ── Abstract state — shared controller + particle management ───────────────
 
-abstract class _RaindropFadeIndividualFieldState<T extends RaindropFadeIndividualField>
+abstract class _RaindropFadeAnimationState<T extends RaindropFadeAnimation>
     extends State<T> with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
-  late List<_RaindropIndividualParticle> _particles;
+  late List<_RaindropParticle> _particles;
 
   final _random = Random();
   double _previousValue = 0.0;
@@ -179,9 +205,9 @@ abstract class _RaindropFadeIndividualFieldState<T extends RaindropFadeIndividua
       ..repeat();
   }
 
-  List<_RaindropIndividualParticle> _buildParticles(int count);
+  List<_RaindropParticle> _buildParticles(int count);
 
-  void _onParticleCycleComplete(_RaindropIndividualParticle particle);
+  void _onParticleCycleComplete(_RaindropParticle particle);
 
   void _onTick() {
     final curr = _controller.value;
@@ -254,8 +280,8 @@ abstract class _RaindropFadeIndividualFieldState<T extends RaindropFadeIndividua
 
 // ── Concrete states ────────────────────────────────────────────────────────
 
-class _RaindropFadeIndividualFieldImagesState
-    extends _RaindropFadeIndividualFieldState<_RaindropFadeIndividualFieldImages> {
+class _RaindropFadeAnimationImagesState
+    extends _RaindropFadeAnimationState<_RaindropFadeAnimationImages> {
   final Map<ImageProvider, ui.Image> _resolvedImages = {};
   final List<(ImageStream, ImageStreamListener)> _subscriptions = [];
 
@@ -266,7 +292,7 @@ class _RaindropFadeIndividualFieldImagesState
   }
 
   @override
-  void didUpdateWidget(_RaindropFadeIndividualFieldImages oldWidget) {
+  void didUpdateWidget(_RaindropFadeAnimationImages oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (!_areListsEqual(oldWidget.imageProviders, widget.imageProviders)) {
       _cleanupStreams();
@@ -312,11 +338,11 @@ class _RaindropFadeIndividualFieldImagesState
   }
 
   @override
-  List<_RaindropIndividualParticle> _buildParticles(int count) {
+  List<_RaindropParticle> _buildParticles(int count) {
     if (widget.imageProviders.isEmpty) return [];
     return List.generate(
       count,
-      (i) => _RaindropIndividualImageParticle(
+      (i) => _RaindropImageParticle(
         position: Offset(_random.nextDouble(), _random.nextDouble()),
         phaseOffset: i / count,
         image: widget.imageProviders[i % widget.imageProviders.length],
@@ -325,8 +351,8 @@ class _RaindropFadeIndividualFieldImagesState
   }
 
   @override
-  void _onParticleCycleComplete(_RaindropIndividualParticle particle) {
-    if (particle is _RaindropIndividualImageParticle && widget.imageProviders.isNotEmpty) {
+  void _onParticleCycleComplete(_RaindropParticle particle) {
+    if (particle is _RaindropImageParticle && widget.imageProviders.isNotEmpty) {
       particle.image = widget.imageProviders[_random.nextInt(widget.imageProviders.length)];
     }
   }
@@ -341,14 +367,14 @@ class _RaindropFadeIndividualFieldImagesState
       );
 }
 
-class _RaindropFadeIndividualFieldTextsState
-    extends _RaindropFadeIndividualFieldState<_RaindropFadeIndividualFieldTexts> {
+class _RaindropFadeAnimationTextsState
+    extends _RaindropFadeAnimationState<_RaindropFadeAnimationTexts> {
   @override
-  List<_RaindropIndividualParticle> _buildParticles(int count) {
+  List<_RaindropParticle> _buildParticles(int count) {
     if (widget.texts.isEmpty) return [];
     return List.generate(
       count,
-      (i) => _RaindropIndividualTextParticle(
+      (i) => _RaindropTextParticle(
         position: Offset(_random.nextDouble(), _random.nextDouble()),
         phaseOffset: i / count,
         text: widget.texts[i % widget.texts.length],
@@ -357,8 +383,8 @@ class _RaindropFadeIndividualFieldTextsState
   }
 
   @override
-  void _onParticleCycleComplete(_RaindropIndividualParticle particle) {
-    if (particle is _RaindropIndividualTextParticle && widget.texts.isNotEmpty) {
+  void _onParticleCycleComplete(_RaindropParticle particle) {
+    if (particle is _RaindropTextParticle && widget.texts.isNotEmpty) {
       particle.text = widget.texts[_random.nextInt(widget.texts.length)];
     }
   }
@@ -378,13 +404,13 @@ class _RaindropFadeIndividualFieldTextsState
 
 /// Base mixin with the per-particle draw loop shared by both painter variants.
 mixin _RaindropFieldPainterMixin {
-  List<_RaindropIndividualParticle> get particles;
+  List<_RaindropParticle> get particles;
   AnimationController get controller;
   Size get particleSize;
 
   /// Draws a single particle's content, centred at the canvas origin.
   /// The caller handles save/restore, translate, and scale.
-  void drawContent(Canvas canvas, _RaindropIndividualParticle particle);
+  void drawContent(Canvas canvas, _RaindropParticle particle, double opacity);
 
   void paintParticles(Canvas canvas, Size size) {
     for (final particle in particles) {
@@ -411,29 +437,18 @@ mixin _RaindropFieldPainterMixin {
         height: particleSize.height,
       ));
 
-      // Let the concrete painter draw its content centred at the origin,
-      // with opacity baked into its Paint / TextStyle.
-      _withOpacity(canvas, opacity, () => drawContent(canvas, particle));
+      // Let the concrete painter draw its content centred at the origin.
+      drawContent(canvas, particle, opacity);
 
       canvas.restore();
     }
-  }
-
-  void _withOpacity(Canvas canvas, double opacity, VoidCallback draw) {
-    // saveLayer creates an offscreen buffer; we composite it back at [opacity].
-    canvas.saveLayer(
-      null,
-      Paint()..color = Color.fromRGBO(0, 0, 0, opacity),
-    );
-    draw();
-    canvas.restore();
   }
 }
 
 class _RaindropFieldImagePainter extends CustomPainter
     with _RaindropFieldPainterMixin {
   @override
-  final List<_RaindropIndividualParticle> particles;
+  final List<_RaindropParticle> particles;
   @override
   final AnimationController controller;
   @override
@@ -449,8 +464,8 @@ class _RaindropFieldImagePainter extends CustomPainter
   }) : super(repaint: repaint);
 
   @override
-  void drawContent(Canvas canvas, _RaindropIndividualParticle particle) {
-    if (particle is _RaindropIndividualImageParticle) {
+  void drawContent(Canvas canvas, _RaindropParticle particle, double opacity) {
+    if (particle is _RaindropImageParticle) {
       final img = resolvedImages[particle.image];
       if (img == null) return;
 
@@ -460,7 +475,10 @@ class _RaindropFieldImagePainter extends CustomPainter
           center: Offset.zero,
           width: particleSize.width,
           height: particleSize.height);
-      canvas.drawImageRect(img, src, dst, Paint());
+      
+      // Apply opacity directly to the Paint object.
+      final paint = Paint()..color = Colors.black.withValues(alpha: opacity);
+      canvas.drawImageRect(img, src, dst, paint);
     }
   }
 
@@ -477,7 +495,7 @@ class _RaindropFieldImagePainter extends CustomPainter
 class _RaindropFieldTextPainter extends CustomPainter
     with _RaindropFieldPainterMixin {
   @override
-  final List<_RaindropIndividualParticle> particles;
+  final List<_RaindropParticle> particles;
   @override
   final AnimationController controller;
   @override
@@ -486,9 +504,6 @@ class _RaindropFieldTextPainter extends CustomPainter
 
   static const _defaultStyle = TextStyle(color: Colors.white, fontSize: 30);
 
-  // Cached TextPainter — rebuilt only when text or style changes.
-  final Map<String, TextPainter> _textPainterCache = {};
-
   _RaindropFieldTextPainter({
     required Listenable repaint,
     required this.particles,
@@ -496,34 +511,22 @@ class _RaindropFieldTextPainter extends CustomPainter
     required this.particleSize,
     required List<String> texts,
     this.textStyle,
-  }) : super(repaint: repaint) {
-    _buildTextPainterCache(texts);
-  }
-
-  void _buildTextPainterCache(List<String> texts) {
-    final style = _defaultStyle.merge(textStyle);
-    for (final text in texts) {
-      _getTextPainter(text, style);
-    }
-  }
-
-  TextPainter _getTextPainter(String text, TextStyle style) {
-    var tp = _textPainterCache[text];
-    if (tp == null) {
-      tp = TextPainter(
-        text: TextSpan(text: text, style: style),
-        textDirection: TextDirection.ltr,
-      )..layout(minWidth: 0, maxWidth: particleSize.width);
-      _textPainterCache[text] = tp;
-    }
-    return tp;
-  }
+  }) : super(repaint: repaint);
 
   @override
-  void drawContent(Canvas canvas, _RaindropIndividualParticle particle) {
-    if (particle is _RaindropIndividualTextParticle) {
-      final style = _defaultStyle.merge(textStyle);
-      final tp = _getTextPainter(particle.text, style);
+  void drawContent(Canvas canvas, _RaindropParticle particle, double opacity) {
+    if (particle is _RaindropTextParticle) {
+      final baseStyle = _defaultStyle.merge(textStyle);
+      // Apply opacity to the text color.
+      final styleWithOpacity = baseStyle.copyWith(
+        color: (baseStyle.color ?? Colors.white).withValues(alpha: opacity),
+      );
+
+      final tp = TextPainter(
+        text: TextSpan(text: particle.text, style: styleWithOpacity),
+        textDirection: TextDirection.ltr,
+      )..layout(minWidth: 0, maxWidth: particleSize.width);
+
       final offset = Offset(
         -tp.width / 2,
         -tp.height / 2,

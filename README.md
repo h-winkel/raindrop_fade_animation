@@ -5,11 +5,11 @@ Animates texts and images, as if they were raindrops on a body of water.
 
 Animate images:
 
-<img src="https://github.com/h-winkel/raindrop_fade_animation/blob/main/webp/multiple_images_short.webp" width="300" />
+<img src="webp/multiple_images_short.webp" width="300" />
 
 Animate texts:
 
-<img src="https://github.com/h-winkel/raindrop_fade_animation/blob/main/webp/multiple_texts_short.webp" width="300" />
+<img src="webp/multiple_texts_short.webp" width="300" />
 
 ## Getting started
 
