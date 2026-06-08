@@ -1,15 +1,15 @@
-<!-- This file uses generated code. Visit https://pub.dev/packages/readme_helper for usage information. -->
+# Raindrop Fade Animation
 Animates texts and images, as if they were raindrops on a body of water.
 
 ## Features
 
 Animate texts:
 
-<img src="https://github.com/h-winkel/raindrop_fade_animation/blob/main/src/example/assets/multiple_texts_short.webp" width="400" />
+<img src="https://github.com/h-winkel/raindrop_fade_animation/blob/main/src/example/assets/multiple_texts_short.webp" width="300" />
 
 Animate images:
 
-<img src="https://github.com/h-winkel/raindrop_fade_animation/blob/main/src/example/assets/multiple_images_short.webp" width="400" />
+<img src="https://github.com/h-winkel/raindrop_fade_animation/blob/main/src/example/assets/multiple_images_short.webp" width="300" />
 
 ## Getting started
 
