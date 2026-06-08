@@ -40,4 +40,10 @@ final multipleImages = RaindropFadeAnimation.images(
   duration: Duration(milliseconds: 1500),
   particleSize: Size(200, 200),);
 ```
-<!-- // end of #code -->
+## Trademarks
+
+The Flutter name and logo are trademarks of Google LLC. Tux (the penguin) was created by Larry Ewing. This package is not endorsed by or affiliated with Google LLC. Logos are used for demonstration purposes only.
+
+## License
+
+MIT - see the [LICENSE](LICENSE) file for details.
